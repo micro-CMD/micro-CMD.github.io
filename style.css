@@ -20,12 +20,13 @@ body {
 .container {
     max-width: 800px;
     margin: 0 auto;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.75);   /* 75% 不透明度，透出背景 */
+    backdrop-filter: blur(6px);              /* 毛玻璃模糊（可选） */
+    -webkit-backdrop-filter: blur(6px);      /* Safari 兼容 */
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     padding: 40px;
 }
-
 /* 导航 */
 .nav {
     display: flex;
