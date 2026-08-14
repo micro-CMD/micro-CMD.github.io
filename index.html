@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的博客</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <nav class="nav">
+        <div class="logo">📝 我的博客</div>
+        <div class="nav-links">
+            <a href="/" onclick="navigate('/'); return false;">首页</a>
+            <a href="/about" onclick="navigate('/about'); return false;">关于</a>
+        </div>
+    </nav>
+
+    <div id="home-page"></div>
+
+    <div id="post-page" style="display:none;">
+        <div id="post-content"></div>
+        <a class="back-link" onclick="navigate('/'); return false;">← 返回首页</a>
+    </div>
+
+    <div class="footer">© 2026 我的博客 · 用 ❤️ 和 HTML 搭建</div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

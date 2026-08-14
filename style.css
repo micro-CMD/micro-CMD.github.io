@@ -1,0 +1,98 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, "Microsoft YaHei", sans-serif;
+    background: #f4f6f9;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    padding: 40px;
+}
+
+/* 导航 */
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #eef2f7;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+.logo { font-size: 24px; font-weight: bold; color: #4a6cf7; }
+.nav-links a {
+    margin-left: 20px;
+    text-decoration: none;
+    color: #666;
+    font-size: 16px;
+}
+.nav-links a:hover { color: #4a6cf7; }
+
+/* 文章列表 */
+.post-item {
+    padding: 25px 0;
+    border-bottom: 1px solid #f0f2f5;
+    cursor: pointer;
+}
+.post-item:last-child { border-bottom: none; }
+.post-item:hover .post-title a { color: #4a6cf7; }
+
+.post-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.post-title a {
+    color: #1a1a2e;
+    text-decoration: none;
+}
+.post-meta {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 12px;
+}
+.post-excerpt {
+    color: #555;
+    font-size: 15px;
+}
+
+/* 文章详情 */
+#post-content h1 {
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+#post-content p {
+    margin-bottom: 18px;
+    font-size: 16px;
+}
+.back-link {
+    display: inline-block;
+    margin-top: 30px;
+    color: #4a6cf7;
+    text-decoration: none;
+}
+.back-link:hover { text-decoration: underline; }
+
+/* 页脚 */
+.footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #eef2f7;
+    text-align: center;
+    font-size: 14px;
+    color: #aaa;
+}
+
+/* 加载状态 */
+.loading { text-align: center; padding: 40px; color: #999; }
