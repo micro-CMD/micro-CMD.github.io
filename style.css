@@ -6,10 +6,15 @@
 
 body {
     font-family: -apple-system, "Microsoft YaHei", sans-serif;
-    background: #f4f6f9;
+    background-image: url('https://pic1.zhimg.com/v2-e8c601d72fa339ad0419dbf82bf13e3d_1440w.jpg?source=172ae18b');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     color: #333;
     line-height: 1.6;
     padding: 20px;
+    min-height: 100vh;
 }
 
 .container {
