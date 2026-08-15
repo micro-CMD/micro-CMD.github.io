@@ -1,18 +1,23 @@
-// ========== 随机背景图逻辑 ==========
+// ========== DOM 引用 ==========
+const homePage = document.getElementById('home-page');
+const postPage = document.getElementById('post-page');
+const postContent = document.getElementById('post-content');
+
+// ========== 随机背景图（页面加载时执行） ==========
 (function setRandomBackground() {
-    // 1. 在这里列出你的图片 URL（网络图片 或 本地图片）
+    // 图片列表（可自由增删，支持网络图或本地图）
     const images = [
-        '', // 山景
+        'https://pic1.zhimg.com/v2-e8c601d72fa339ad0419dbf82bf13e3d_1440w.jpg?source=172ae18b', // 山景
         'https://maimai.sega.com/assets/img/universe/top/kv_pc.png', // 森林
         'https://ts3.tc.mm.bing.net/th/id/OIP-C.HGgoaTiFplZmzzphCtrtFgAAAA?r=0&pid=ImgDet&w=474&h=248&rs=1&o=7&rm=3', // 树林
         'https://ts1.tc.mm.bing.net/th/id/OIP-C.YqyNAl8FQ4GQf1iLFobyEQHaD4?r=0&rs=1&pid=ImgDetMain&o=7&rm=3', // 星空
     ];
 
-    // 2. 随机选一张
+    // 随机选一张
     const randomIndex = Math.floor(Math.random() * images.length);
     const selectedImage = images[randomIndex];
 
-    // 3. 应用到 body
+    // 应用到 body
     document.body.style.backgroundImage = `url(${selectedImage})`;
     document.body.style.backgroundSize = 'cover';
     document.body.style.backgroundPosition = 'center';
@@ -20,20 +25,14 @@
     document.body.style.backgroundRepeat = 'no-repeat';
 })();
 
-
-// ---------- DOM 引用 ----------
-const homePage = document.getElementById('home-page');
-const postPage = document.getElementById('post-page');
-const postContent = document.getElementById('post-content');
-
-// ---------- 工具：fetch 封装 ----------
+// ========== 工具：fetch 封装 ==========
 async function fetchJSON(url) {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status} - ${url}`);
     return res.json();
 }
 
-// ---------- 渲染首页 ----------
+// ========== 渲染首页 ==========
 async function renderHome() {
     homePage.style.display = 'block';
     postPage.style.display = 'none';
@@ -54,7 +53,7 @@ async function renderHome() {
     }
 }
 
-// ---------- 渲染文章详情 ----------
+// ========== 渲染文章详情 ==========
 async function renderPost(id) {
     homePage.style.display = 'none';
     postPage.style.display = 'block';
@@ -73,7 +72,7 @@ async function renderPost(id) {
     }
 }
 
-// ---------- 渲染关于 ----------
+// ========== 渲染关于 ==========
 async function renderAbout() {
     homePage.style.display = 'none';
     postPage.style.display = 'block';
@@ -91,15 +90,13 @@ async function renderAbout() {
     }
 }
 
-// ---------- 路由导航 ----------
+// ========== 路由导航 ==========
 function navigate(path) {
-    // 更新 hash（但不触发多余事件）
     const currentHash = window.location.hash.slice(1) || '/';
     if (currentHash !== path) {
         window.location.hash = path;
     }
 
-    // 根据路径渲染
     if (path === '/' || path === '') {
         renderHome();
     } else if (path === '/about') {
@@ -109,19 +106,18 @@ function navigate(path) {
         if (match) {
             renderPost(match[1]);
         } else {
-            renderHome(); // 未知路径回首页
+            renderHome();
         }
     }
 }
 
-// ---------- 监听浏览器前进/后退 ----------
+// ========== 监听浏览器前进/后退 ==========
 window.addEventListener('hashchange', () => {
     const hash = window.location.hash.slice(1) || '/';
     navigate(hash);
 });
 
-// ---------- 页面初始化 ----------
-// 直接根据当前 hash 决定显示什么，但默认显示首页
+// ========== 页面初始化 ==========
 (async function init() {
     const hash = window.location.hash.slice(1) || '/';
     if (hash === '/about') {
@@ -131,6 +127,6 @@ window.addEventListener('hashchange', () => {
         if (id) await renderPost(id);
         else await renderHome();
     } else {
-        await renderHome(); // 默认首页
+        await renderHome();
     }
 })();
