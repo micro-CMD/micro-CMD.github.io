@@ -6,12 +6,10 @@ const postContent = document.getElementById('post-content');
 // ========== 随机背景图（页面加载时执行） ==========
 (function setRandomBackground() {
     // 图片列表（可自由增删，支持网络图或本地图）
-    const images = [
-        'https://pic1.zhimg.com/v2-e8c601d72fa339ad0419dbf82bf13e3d_1440w.jpg?source=172ae18b', // 山景
-        'https://maimai.sega.com/assets/img/universe/top/kv_pc.png', // 森林
-        'https://ts3.tc.mm.bing.net/th/id/OIP-C.HGgoaTiFplZmzzphCtrtFgAAAA?r=0&pid=ImgDet&w=474&h=248&rs=1&o=7&rm=3', // 树林
-        'https://ts1.tc.mm.bing.net/th/id/OIP-C.YqyNAl8FQ4GQf1iLFobyEQHaD4?r=0&rs=1&pid=ImgDetMain&o=7&rm=3', // 星空
-    ];
+const images = [
+    'images/0723458a3aff6a65a4f0fa2e9301ed1c.png',   // 本地图片
+    'images/OIP-C.png',
+];
 
     // 随机选一张
     const randomIndex = Math.floor(Math.random() * images.length);
