@@ -1,3 +1,18 @@
+// ========== 随机背景图（立即执行） ==========
+(function setRandomBackground() {
+    const images = [
+        'images/0723458a3aff6a65a4f0fa2e9301ed1c.png',
+        'images/OIP-C.png',
+    ];
+    const randomIndex = Math.floor(Math.random() * images.length);
+    const selectedImage = images[randomIndex];
+    document.body.style.backgroundImage = `url(${selectedImage})`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundRepeat = 'no-repeat';
+})();
+
 // ---------- DOM 引用 ----------
 const homePage = document.getElementById('home-page');
 const postPage = document.getElementById('post-page');
