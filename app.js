@@ -1,3 +1,26 @@
+// ========== 随机背景图逻辑 ==========
+(function setRandomBackground() {
+    // 1. 在这里列出你的图片 URL（网络图片 或 本地图片）
+    const images = [
+        '', // 山景
+        'https://maimai.sega.com/assets/img/universe/top/kv_pc.png', // 森林
+        'https://ts3.tc.mm.bing.net/th/id/OIP-C.HGgoaTiFplZmzzphCtrtFgAAAA?r=0&pid=ImgDet&w=474&h=248&rs=1&o=7&rm=3', // 树林
+        'https://ts1.tc.mm.bing.net/th/id/OIP-C.YqyNAl8FQ4GQf1iLFobyEQHaD4?r=0&rs=1&pid=ImgDetMain&o=7&rm=3', // 星空
+    ];
+
+    // 2. 随机选一张
+    const randomIndex = Math.floor(Math.random() * images.length);
+    const selectedImage = images[randomIndex];
+
+    // 3. 应用到 body
+    document.body.style.backgroundImage = `url(${selectedImage})`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundRepeat = 'no-repeat';
+})();
+
+
 // ---------- DOM 引用 ----------
 const homePage = document.getElementById('home-page');
 const postPage = document.getElementById('post-page');
