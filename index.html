@@ -8,21 +8,26 @@
 </head>
 <body>
 <div class="container">
+    <!-- ========== 导航栏（已修复） ========== -->
     <nav class="nav">
         <div class="logo">📝 我的博客</div>
         <div class="nav-links">
             <a href="/" onclick="navigate('/'); return false;">首页</a>
             <a href="/about" onclick="navigate('/about'); return false;">关于</a>
+            <a onclick="toggleTheme(); return false;" style="cursor:pointer;">🌓 深色</a>
         </div>
     </nav>
 
+    <!-- 首页文章列表 -->
     <div id="home-page"></div>
 
+    <!-- 文章详情页 -->
     <div id="post-page" style="display:none;">
         <div id="post-content"></div>
         <a class="back-link" onclick="navigate('/'); return false;">← 返回首页</a>
     </div>
 
+    <!-- 页脚 -->
     <div class="footer">© 2026 我的博客 · 用 ❤️ 和 HTML 搭建</div>
 </div>
 
