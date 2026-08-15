@@ -1,36 +1,16 @@
-// ========== DOM 引用 ==========
+// ---------- DOM 引用 ----------
 const homePage = document.getElementById('home-page');
 const postPage = document.getElementById('post-page');
 const postContent = document.getElementById('post-content');
 
-// ========== 随机背景图（页面加载时执行） ==========
-(function setRandomBackground() {
-    // 图片列表（可自由增删，支持网络图或本地图）
-const images = [
-    'images/0723458a3aff6a65a4f0fa2e9301ed1c.png',   // 本地图片
-    'images/OIP-C.png',
-];
-
-    // 随机选一张
-    const randomIndex = Math.floor(Math.random() * images.length);
-    const selectedImage = images[randomIndex];
-
-    // 应用到 body
-    document.body.style.backgroundImage = `url(${selectedImage})`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundAttachment = 'fixed';
-    document.body.style.backgroundRepeat = 'no-repeat';
-})();
-
-// ========== 工具：fetch 封装 ==========
+// ---------- 工具：fetch 封装 ----------
 async function fetchJSON(url) {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status} - ${url}`);
     return res.json();
 }
 
-// ========== 渲染首页 ==========
+// ---------- 渲染首页 ----------
 async function renderHome() {
     homePage.style.display = 'block';
     postPage.style.display = 'none';
@@ -51,7 +31,7 @@ async function renderHome() {
     }
 }
 
-// ========== 渲染文章详情 ==========
+// ---------- 渲染文章详情 ----------
 async function renderPost(id) {
     homePage.style.display = 'none';
     postPage.style.display = 'block';
@@ -70,7 +50,7 @@ async function renderPost(id) {
     }
 }
 
-// ========== 渲染关于 ==========
+// ---------- 渲染关于 ----------
 async function renderAbout() {
     homePage.style.display = 'none';
     postPage.style.display = 'block';
@@ -88,13 +68,15 @@ async function renderAbout() {
     }
 }
 
-// ========== 路由导航 ==========
+// ---------- 路由导航 ----------
 function navigate(path) {
+    // 更新 hash（但不触发多余事件）
     const currentHash = window.location.hash.slice(1) || '/';
     if (currentHash !== path) {
         window.location.hash = path;
     }
 
+    // 根据路径渲染
     if (path === '/' || path === '') {
         renderHome();
     } else if (path === '/about') {
@@ -104,18 +86,19 @@ function navigate(path) {
         if (match) {
             renderPost(match[1]);
         } else {
-            renderHome();
+            renderHome(); // 未知路径回首页
         }
     }
 }
 
-// ========== 监听浏览器前进/后退 ==========
+// ---------- 监听浏览器前进/后退 ----------
 window.addEventListener('hashchange', () => {
     const hash = window.location.hash.slice(1) || '/';
     navigate(hash);
 });
 
-// ========== 页面初始化 ==========
+// ---------- 页面初始化 ----------
+// 直接根据当前 hash 决定显示什么，但默认显示首页
 (async function init() {
     const hash = window.location.hash.slice(1) || '/';
     if (hash === '/about') {
@@ -125,6 +108,36 @@ window.addEventListener('hashchange', () => {
         if (id) await renderPost(id);
         else await renderHome();
     } else {
-        await renderHome();
+        await renderHome(); // 默认首页
+    }
+})();
+
+// ========== 深色模式切换 ==========
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme); // 记住用户偏好
+
+    // 可选：修改按钮文字（增强体验）
+    const btn = document.querySelector('.nav-links a:last-child');
+    if (btn) {
+        btn.textContent = newTheme === 'dark' ? '☀️ 明亮' : '🌓 深色';
+    }
+}
+
+// 页面加载时，读取本地存储的设置
+(function loadTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+    
+    if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        // 修改按钮文字
+        const btn = document.querySelector('.nav-links a:last-child');
+        if (btn) btn.textContent = '☀️ 明亮';
     }
 })();
