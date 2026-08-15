@@ -6,24 +6,21 @@
 
 body {
     font-family: -apple-system, "Microsoft YaHei", sans-serif;
-    /* background-image: url('...');  ← 这一行删掉或注释掉 */
-    background-color: #f4f6f9;   /* 保留纯色作为图片加载时的后备 */
+    background: #f4f6f9;
     color: #333;
     line-height: 1.6;
     padding: 20px;
-    min-height: 100vh;
 }
 
 .container {
     max-width: 800px;
     margin: 0 auto;
-    background: rgba(255, 255, 255, 0.75);   /* 75% 不透明度，透出背景 */
-    backdrop-filter: blur(6px);              /* 毛玻璃模糊（可选） */
-    -webkit-backdrop-filter: blur(6px);      /* Safari 兼容 */
+    background: #fff;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     padding: 40px;
 }
+
 /* 导航 */
 .nav {
     display: flex;
@@ -99,3 +96,61 @@ body {
 
 /* 加载状态 */
 .loading { text-align: center; padding: 40px; color: #999; }
+/* ========== 深色模式 ========== */
+[data-theme="dark"] body {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .container {
+    background: rgba(20, 20, 30, 0.85);  /* 深色半透明背景 */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .nav {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .logo {
+    color: #7a9eff;
+}
+
+[data-theme="dark"] .nav-links a {
+    color: #aaa;
+}
+[data-theme="dark"] .nav-links a:hover {
+    color: #fff;
+}
+
+[data-theme="dark"] .post-title a {
+    color: #f0f0f0;
+}
+[data-theme="dark"] .post-title a:hover {
+    color: #7a9eff;
+}
+
+[data-theme="dark"] .post-item {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .post-meta {
+    color: #888;
+}
+[data-theme="dark"] .post-excerpt {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .footer {
+    border-top-color: rgba(255, 255, 255, 0.06);
+    color: #666;
+}
+
+/* 文章详情页文字 */
+[data-theme="dark"] #post-content p {
+    color: #d0d0d0;
+}
+[data-theme="dark"] #post-content h1 {
+    color: #ffffff;
+}
+[data-theme="dark"] .back-link {
+    color: #7a9eff;
+}
