@@ -6,11 +6,8 @@
 
 body {
     font-family: -apple-system, "Microsoft YaHei", sans-serif;
-    background-image: url('https://pic1.zhimg.com/v2-e8c601d72fa339ad0419dbf82bf13e3d_1440w.jpg?source=172ae18b');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    /* background-image: url('...');  ← 这一行删掉或注释掉 */
+    background-color: #f4f6f9;   /* 保留纯色作为图片加载时的后备 */
     color: #333;
     line-height: 1.6;
     padding: 20px;
