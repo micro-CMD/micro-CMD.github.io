@@ -156,3 +156,163 @@ function toggleTheme() {
         if (btn) btn.textContent = '☀️ 明亮';
     }
 })();
+// ========== 生成分享图（Canvas） ==========
+async function generateShareImage() {
+    const titleEl = document.querySelector('#post-content h1');
+    const dateEl = document.querySelector('#post-content .post-date-meta');
+    if (!titleEl) return alert('未找到文章标题');
+
+    const title = titleEl.textContent.trim();
+    const date = dateEl ? dateEl.textContent.trim().replace('📅 ', '') : new Date().toISOString().slice(0,10);
+    const blogName = 'micro-CMD 的博客';
+    const bgImageUrl = 'images/0723458a3aff6a65a4f0fa2e9301ed1c.png'; // 可改成你想用的背景图
+
+    // 1. 加载背景图
+    const bgImg = new Image();
+    bgImg.crossOrigin = 'anonymous';
+    bgImg.src = bgImageUrl;
+    await new Promise((resolve, reject) => {
+        bgImg.onload = resolve;
+        bgImg.onerror = () => reject(new Error('背景图加载失败'));
+    });
+
+    // 2. 设置画布尺寸（1200x630 标准分享图比例）
+    const width = 1200, height = 630;
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    // 3. 绘制背景图（铺满）
+    ctx.drawImage(bgImg, 0, 0, width, height);
+
+    // 4. 绘制半透明圆角卡片
+    const cardMargin = 80;
+    const cardX = cardMargin, cardY = cardMargin;
+    const cardW = width - 2 * cardMargin, cardH = height - 2 * cardMargin;
+    const radius = 30;
+
+    // 绘制圆角矩形路径
+    ctx.beginPath();
+    ctx.moveTo(cardX + radius, cardY);
+    ctx.lineTo(cardX + cardW - radius, cardY);
+    ctx.quadraticCurveTo(cardX + cardW, cardY, cardX + cardW, cardY + radius);
+    ctx.lineTo(cardX + cardW, cardY + cardH - radius);
+    ctx.quadraticCurveTo(cardX + cardW, cardY + cardH, cardX + cardW - radius, cardY + cardH);
+    ctx.lineTo(cardX + radius, cardY + cardH);
+    ctx.quadraticCurveTo(cardX, cardY + cardH, cardX, cardY + cardH - radius);
+    ctx.lineTo(cardX, cardY + radius);
+    ctx.quadraticCurveTo(cardX, cardY, cardX + radius, cardY);
+    ctx.closePath();
+
+    // 填充半透明白色
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.78)';
+    ctx.fill();
+    // 可选加描边
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 5. 绘制文字（需要中文字体，使用系统黑体）
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    // 标题（支持自动换行）
+    const maxTitleWidth = cardW - 80;
+    let fontSize = 48;
+    ctx.font = `bold ${fontSize}px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+    let lines = [];
+    let words = title.split('');
+    let line = '';
+    for (let i = 0; i < words.length; i++) {
+        let testLine = line + words[i];
+        let metrics = ctx.measureText(testLine);
+        if (metrics.width > maxTitleWidth && i > 0) {
+            lines.push(line);
+            line = words[i];
+        } else {
+            line = testLine;
+        }
+    }
+    if (line) lines.push(line);
+    // 如果行数太多，减小字号
+    while (lines.length > 3 && fontSize > 28) {
+        fontSize -= 4;
+        ctx.font = `bold ${fontSize}px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+        lines = [];
+        line = '';
+        for (let i = 0; i < words.length; i++) {
+            let testLine = line + words[i];
+            let metrics = ctx.measureText(testLine);
+            if (metrics.width > maxTitleWidth && i > 0) {
+                lines.push(line);
+                line = words[i];
+            } else {
+                line = testLine;
+            }
+        }
+        if (line) lines.push(line);
+    }
+
+    const lineHeight = fontSize * 1.3;
+    const totalTitleHeight = lines.length * lineHeight;
+    const startY = cardY + (cardH - totalTitleHeight - 80) / 2;
+
+    ctx.fillStyle = '#1a1a2e';
+    ctx.textBaseline = 'top';
+    lines.forEach((line, idx) => {
+        ctx.fillText(line, width/2, startY + idx * lineHeight);
+    });
+
+    // 日期（副标题）
+    const dateFontSize = 28;
+    ctx.font = `${dateFontSize}px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+    ctx.fillStyle = '#666';
+    const dateY = startY + totalTitleHeight + 30;
+    ctx.fillText(`📅 ${date}  ·  博客分享`, width/2, dateY);
+
+    // 水印（博客名称，右下角）
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.font = `20px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+    ctx.fillStyle = 'rgba(150,150,150,0.8)';
+    ctx.fillText(blogName, width - 40, height - 40);
+
+    // 6. 导出为 PNG 并下载
+    const link = document.createElement('a');
+    link.download = `分享图-${title.slice(0,20)}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+}
+
+// ========== 在渲染文章时显示分享按钮 ==========
+// 修改 renderPost 函数，在内容加载完成后显示分享区域
+// 将你现有的 renderPost 函数替换为下面这个（或在你原有基础上加两行）
+
+async function renderPost(id) {
+    homePage.style.display = 'none';
+    postPage.style.display = 'block';
+    postContent.innerHTML = '<div class="loading">加载中...</div>';
+    // 隐藏分享按钮
+    const shareSection = document.getElementById('share-section');
+    if (shareSection) shareSection.style.display = 'none';
+
+    try {
+        const data = await fetchJSON(`./posts/${id}.json`);
+        postContent.innerHTML = `
+            <div style="margin-bottom:10px;color:#999;font-size:14px;" class="post-date-meta">📅 ${data.date}</div>
+            <h1>${data.title}</h1>
+            ${data.content.map(p => `<p>${p}</p>`).join('')}
+        `;
+        // 显示分享按钮
+        if (shareSection) shareSection.style.display = 'block';
+        // 绑定按钮事件（防止重复绑定）
+        const shareBtn = document.getElementById('share-btn');
+        if (shareBtn) {
+            shareBtn.onclick = generateShareImage;
+        }
+    } catch (err) {
+        postContent.innerHTML = `<div style="color:red;padding:40px;">加载文章失败：${err.message}</div>`;
+        console.error(err);
+    }
+}

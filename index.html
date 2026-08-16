@@ -9,7 +9,7 @@
 </head>
 <body>
 <div class="container">
-    <!-- ========== 导航栏（已修复） ========== -->
+    <!-- ========== 导航栏 ========== -->
     <nav class="nav">
         <div class="logo">📝 我的博客</div>
         <div class="nav-links">
@@ -19,16 +19,34 @@
         </div>
     </nav>
 
-    <!-- 首页文章列表 -->
+    <!-- ========== 首页文章列表 ========== -->
     <div id="home-page"></div>
 
-    <!-- 文章详情页 -->
+    <!-- ========== 文章详情页 ========== -->
     <div id="post-page" style="display:none;">
+        <!-- 1. 文章正文 -->
         <div id="post-content"></div>
+
+        <!-- 2. 分享按钮区域 -->
+        <div id="share-section" style="margin-top: 30px; text-align: center; display: none;">
+            <button id="share-btn" style="
+                background: #4a6cf7;
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 30px;
+                font-size: 16px;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(74,108,247,0.3);
+                transition: 0.2s;
+            ">📤 生成分享图</button>
+        </div>
+
+        <!-- 3. 返回首页链接 -->
         <a class="back-link" onclick="navigate('/'); return false;">← 返回首页</a>
     </div>
 
-    <!-- 页脚 -->
+    <!-- ========== 页脚 ========== -->
     <div class="footer">© 2026 我的博客 · 用 ❤️ 和 HTML 搭建</div>
 </div>
 
