@@ -169,28 +169,25 @@ function toggleTheme() {
 
 // ========== 生成分享图 ==========
 async function generateShareImage() {
-    // 从 DOM 中获取当前文章信息（更可靠）
-    const titleEl = document.querySelector('#post-content h1');
-    const dateEl = document.querySelector('#post-content .post-date-meta');
-    const contentEls = document.querySelectorAll('#post-content p');
-
-    if (!titleEl) {
+    if (!currentPostData) {
         alert('请先打开一篇文章');
         return;
     }
 
-    const title = titleEl.textContent.trim();
-    const date = dateEl ? dateEl.textContent.trim().replace('📅 ', '') : new Date().toISOString().slice(0, 10);
+    const title = currentPostData.title || '无标题';
+    const date = currentPostData.date || new Date().toISOString().slice(0, 10);
     const blogName = 'micro-CMD 的博客';
-    const bgImageUrl = 'images/bg1.jpg'; // 确认路径正确
+    const bgImageUrl = 'images/bg1.jpg';
 
-    // 从 DOM 提取正文（合并所有段落，去除 HTML 标签）
+    // 提取正文（从 currentPostData 读取，不依赖 DOM）
     let rawContent = '';
-    contentEls.forEach(el => {
-        rawContent += el.textContent.trim() + ' ';
-    });
-    rawContent = rawContent.trim();
-    // 截取前 100 个字符作为摘要
+    if (Array.isArray(currentPostData.content)) {
+        rawContent = currentPostData.content.join(' ');
+    } else if (typeof currentPostData.content === 'string') {
+        rawContent = currentPostData.content;
+    }
+    rawContent = rawContent.replace(/<[^>]+>/g, '').trim();
+    // 截取前100个字符
     let excerpt = rawContent.slice(0, 100);
     if (rawContent.length > 100) excerpt += '...';
 
@@ -201,24 +198,23 @@ async function generateShareImage() {
     try {
         await new Promise((resolve, reject) => {
             bgImg.onload = resolve;
-            bgImg.onerror = () => reject(new Error('背景图加载失败，请检查路径'));
+            bgImg.onerror = () => reject(new Error('背景图加载失败'));
         });
-    } catch (err) {
-        alert('背景图加载失败，将使用纯色背景');
-        // 如果背景图加载失败，继续执行，后面会绘制纯色背景
+    } catch (e) {
+        // 背景图加载失败，使用纯色
     }
 
-    const width = 1200, height = 630;
+    const width = 1200,
+        height = 630;
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
 
-    // 绘制背景（如果图片加载成功则画图，否则画渐变）
+    // 绘制背景
     try {
         ctx.drawImage(bgImg, 0, 0, width, height);
     } catch (e) {
-        // 纯色渐变背景
         const grad = ctx.createLinearGradient(0, 0, width, height);
         grad.addColorStop(0, '#667eea');
         grad.addColorStop(1, '#764ba2');
@@ -226,10 +222,12 @@ async function generateShareImage() {
         ctx.fillRect(0, 0, width, height);
     }
 
-    // 半透明圆角卡片
+    // 圆角卡片
     const cardMargin = 80;
-    const cardX = cardMargin, cardY = cardMargin;
-    const cardW = width - 2 * cardMargin, cardH = height - 2 * cardMargin;
+    const cardX = cardMargin,
+        cardY = cardMargin;
+    const cardW = width - 2 * cardMargin,
+        cardH = height - 2 * cardMargin;
     const radius = 30;
 
     ctx.beginPath();
@@ -245,89 +243,96 @@ async function generateShareImage() {
     ctx.closePath();
     ctx.fillStyle = 'rgba(255,255,255,0.82)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
 
-    // ===== 绘制文字 =====
+    // ===== 标题 =====
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-
-    // 标题自动换行
-    const maxTitleWidth = cardW - 80;
+    const maxWidth = cardW - 80;
     let fontSize = 44;
     ctx.font = `bold ${fontSize}px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
-    let lines = [];
-    let line = '';
+
+    // 标题换行（修复版：按空格/标点优先换行）
+    let titleLines = [];
+    let currentLine = '';
     for (let i = 0; i < title.length; i++) {
-        let testLine = line + title[i];
-        let metrics = ctx.measureText(testLine);
-        if (metrics.width > maxTitleWidth && i > 0) {
-            lines.push(line);
-            line = title[i];
+        let testLine = currentLine + title[i];
+        if (ctx.measureText(testLine).width > maxWidth && currentLine.length > 0) {
+            // 如果当前字符是中文标点，连同标点一起换行
+            if (['，', '。', '！', '？', '、', '：', '；'].includes(title[i])) {
+                currentLine += title[i];
+                titleLines.push(currentLine);
+                currentLine = '';
+            } else {
+                titleLines.push(currentLine);
+                currentLine = title[i];
+            }
         } else {
-            line = testLine;
+            currentLine = testLine;
         }
     }
-    if (line) lines.push(line);
-    while (lines.length > 3 && fontSize > 28) {
+    if (currentLine) titleLines.push(currentLine);
+
+    // 如果标题行数超过3行，减小字号
+    while (titleLines.length > 3 && fontSize > 28) {
         fontSize -= 4;
         ctx.font = `bold ${fontSize}px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
-        lines = [];
-        line = '';
+        titleLines = [];
+        currentLine = '';
         for (let i = 0; i < title.length; i++) {
-            let testLine = line + title[i];
-            let metrics = ctx.measureText(testLine);
-            if (metrics.width > maxTitleWidth && i > 0) {
-                lines.push(line);
-                line = title[i];
-            } else {
-                line = testLine;
-            }
-        }
-        if (line) lines.push(line);
-    }
-
-    const lineHeight = fontSize * 1.3;
-    let startY = cardY + 50;
-
-    ctx.fillStyle = '#1a1a2e';
-    lines.forEach((l, idx) => {
-        ctx.fillText(l, width / 2, startY + idx * lineHeight);
-    });
-
-    // 日期
-    startY += lines.length * lineHeight + 20;
-    ctx.font = `24px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
-    ctx.fillStyle = '#666';
-    ctx.fillText(`📅 ${date}`, width / 2, startY);
-
-    // 正文摘要（如果有内容）
-    if (excerpt && excerpt.length > 0) {
-        startY += 45;
-        ctx.font = `26px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
-        ctx.fillStyle = '#333';
-        const maxExcerptWidth = cardW - 80;
-        let excerptLines = [];
-        let currentLine = '';
-        for (let i = 0; i < excerpt.length; i++) {
-            let testLine = currentLine + excerpt[i];
-            let metrics = ctx.measureText(testLine);
-            if (metrics.width > maxExcerptWidth && i > 0) {
-                excerptLines.push(currentLine);
-                currentLine = excerpt[i];
+            let testLine = currentLine + title[i];
+            if (ctx.measureText(testLine).width > maxWidth && currentLine.length > 0) {
+                if (['，', '。', '！', '？', '、', '：', '；'].includes(title[i])) {
+                    currentLine += title[i];
+                    titleLines.push(currentLine);
+                    currentLine = '';
+                } else {
+                    titleLines.push(currentLine);
+                    currentLine = title[i];
+                }
             } else {
                 currentLine = testLine;
             }
         }
-        if (currentLine) excerptLines.push(currentLine);
-        excerptLines = excerptLines.slice(0, 3); // 最多3行
-        excerptLines.forEach((l, idx) => {
-            ctx.fillText(l, width / 2, startY + idx * 38);
+        if (currentLine) titleLines.push(currentLine);
+    }
+
+    const lineHeight = fontSize * 1.3;
+    let startY = cardY + 50;
+    ctx.fillStyle = '#1a1a2e';
+    titleLines.forEach((line, idx) => {
+        ctx.fillText(line, width / 2, startY + idx * lineHeight);
+    });
+
+    // ===== 日期 =====
+    startY += titleLines.length * lineHeight + 20;
+    ctx.font = `24px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+    ctx.fillStyle = '#666';
+    ctx.fillText(`📅 ${date} · 博客分享`, width / 2, startY);
+
+    // ===== 正文摘要 =====
+    if (excerpt && excerpt.length > 0) {
+        startY += 45;
+        ctx.font = `26px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+        ctx.fillStyle = '#333';
+        let excerptLines = [];
+        let currentExcerptLine = '';
+        for (let i = 0; i < excerpt.length; i++) {
+            let testLine = currentExcerptLine + excerpt[i];
+            if (ctx.measureText(testLine).width > maxWidth && currentExcerptLine.length > 0) {
+                excerptLines.push(currentExcerptLine);
+                currentExcerptLine = excerpt[i];
+            } else {
+                currentExcerptLine = testLine;
+            }
+        }
+        if (currentExcerptLine) excerptLines.push(currentExcerptLine);
+        excerptLines = excerptLines.slice(0, 3);
+        excerptLines.forEach((line, idx) => {
+            ctx.fillText(line, width / 2, startY + idx * 38);
         });
     }
 
-    // 水印
+    // ===== 水印 =====
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
     ctx.font = `20px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
