@@ -176,7 +176,7 @@ async function generateShareImage() {
 
     const title = currentPostData.title || '无标题';
     const date = currentPostData.date || new Date().toISOString().slice(0, 10);
-    const blogName = 'micro-CMD 的博客 https://micro-CMD.github.io';
+    const blogName = 'micro-CMD 的博客';
     const bgImageUrl = 'images/bg1.jpg';
 
     // 提取正文
@@ -344,6 +344,13 @@ async function generateShareImage() {
         });
     }
 
+        // ===== 博客网址 =====
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.font = `16px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+        ctx.fillStyle = 'rgba(100,100,100,0.6)';
+        ctx.fillText('https://micro-CMD.github.io', width / 2, height - 45);
+    
     // 水印
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
