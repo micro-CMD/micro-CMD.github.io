@@ -179,17 +179,17 @@ async function generateShareImage() {
     const blogName = 'micro-CMD 的博客';
     const bgImageUrl = 'images/bg1.jpg';
 
-    // 提取正文（从 currentPostData 读取，不依赖 DOM）
-    let rawContent = '';
+    // 提取正文
+    let fullContent = '';
     if (Array.isArray(currentPostData.content)) {
-        rawContent = currentPostData.content.join(' ');
+        fullContent = currentPostData.content.join(' ');
     } else if (typeof currentPostData.content === 'string') {
-        rawContent = currentPostData.content;
+        fullContent = currentPostData.content;
     }
-    rawContent = rawContent.replace(/<[^>]+>/g, '').trim();
-    // 截取前100个字符
-    let excerpt = rawContent.slice(0, 100);
-    if (rawContent.length > 100) excerpt += '...';
+    fullContent = fullContent.replace(/<[^>]+>/g, '').trim();
+
+    // ===== 竖屏尺寸（3:4 比例） =====
+    const width = 600, height = 900;
 
     // 加载背景图
     const bgImg = new Image();
@@ -200,12 +200,8 @@ async function generateShareImage() {
             bgImg.onload = resolve;
             bgImg.onerror = () => reject(new Error('背景图加载失败'));
         });
-    } catch (e) {
-        // 背景图加载失败，使用纯色
-    }
+    } catch (e) {}
 
-    const width = 1200,
-        height = 630;
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -222,13 +218,11 @@ async function generateShareImage() {
         ctx.fillRect(0, 0, width, height);
     }
 
-    // 圆角卡片
-    const cardMargin = 80;
-    const cardX = cardMargin,
-        cardY = cardMargin;
-    const cardW = width - 2 * cardMargin,
-        cardH = height - 2 * cardMargin;
-    const radius = 30;
+    // ===== 圆角卡片（更大占比，上下留白更小） =====
+    const cardMargin = 30;
+    const cardX = cardMargin, cardY = cardMargin;
+    const cardW = width - 2 * cardMargin, cardH = height - 2 * cardMargin;
+    const radius = 25;
 
     ctx.beginPath();
     ctx.moveTo(cardX + radius, cardY);
@@ -244,51 +238,36 @@ async function generateShareImage() {
     ctx.fillStyle = 'rgba(255,255,255,0.82)';
     ctx.fill();
 
-    // ===== 标题 =====
+    // ===== 文字 =====
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    const maxWidth = cardW - 80;
-    let fontSize = 44;
-    ctx.font = `bold ${fontSize}px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+    const maxWidth = cardW - 40;
 
-    // 标题换行（修复版：按空格/标点优先换行）
+    // 标题（字号适配竖屏）
+    let fontSize = 32;
+    ctx.font = `bold ${fontSize}px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
     let titleLines = [];
     let currentLine = '';
     for (let i = 0; i < title.length; i++) {
         let testLine = currentLine + title[i];
         if (ctx.measureText(testLine).width > maxWidth && currentLine.length > 0) {
-            // 如果当前字符是中文标点，连同标点一起换行
-            if (['，', '。', '！', '？', '、', '：', '；'].includes(title[i])) {
-                currentLine += title[i];
-                titleLines.push(currentLine);
-                currentLine = '';
-            } else {
-                titleLines.push(currentLine);
-                currentLine = title[i];
-            }
+            titleLines.push(currentLine);
+            currentLine = title[i];
         } else {
             currentLine = testLine;
         }
     }
     if (currentLine) titleLines.push(currentLine);
-
-    // 如果标题行数超过3行，减小字号
-    while (titleLines.length > 3 && fontSize > 28) {
-        fontSize -= 4;
+    while (titleLines.length > 3 && fontSize > 22) {
+        fontSize -= 2;
         ctx.font = `bold ${fontSize}px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
         titleLines = [];
         currentLine = '';
         for (let i = 0; i < title.length; i++) {
             let testLine = currentLine + title[i];
             if (ctx.measureText(testLine).width > maxWidth && currentLine.length > 0) {
-                if (['，', '。', '！', '？', '、', '：', '；'].includes(title[i])) {
-                    currentLine += title[i];
-                    titleLines.push(currentLine);
-                    currentLine = '';
-                } else {
-                    titleLines.push(currentLine);
-                    currentLine = title[i];
-                }
+                titleLines.push(currentLine);
+                currentLine = title[i];
             } else {
                 currentLine = testLine;
             }
@@ -297,47 +276,80 @@ async function generateShareImage() {
     }
 
     const lineHeight = fontSize * 1.3;
-    let startY = cardY + 50;
+    let startY = cardY + 30;
     ctx.fillStyle = '#1a1a2e';
     titleLines.forEach((line, idx) => {
         ctx.fillText(line, width / 2, startY + idx * lineHeight);
     });
 
-    // ===== 日期 =====
-    startY += titleLines.length * lineHeight + 20;
-    ctx.font = `24px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+    // 日期
+    startY += titleLines.length * lineHeight + 15;
+    ctx.font = `18px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
     ctx.fillStyle = '#666';
     ctx.fillText(`📅 ${date} · 博客分享`, width / 2, startY);
 
-    // ===== 正文摘要 =====
-    if (excerpt && excerpt.length > 0) {
-        startY += 45;
-        ctx.font = `26px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
-        ctx.fillStyle = '#333';
-        let excerptLines = [];
-        let currentExcerptLine = '';
-        for (let i = 0; i < excerpt.length; i++) {
-            let testLine = currentExcerptLine + excerpt[i];
-            if (ctx.measureText(testLine).width > maxWidth && currentExcerptLine.length > 0) {
-                excerptLines.push(currentExcerptLine);
-                currentExcerptLine = excerpt[i];
+    // ===== 正文（竖屏显示更多） =====
+    if (fullContent && fullContent.length > 0) {
+        startY += 30;
+        let contentFontSize = 20;
+        ctx.font = `${contentFontSize}px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+
+        let contentLines = [];
+        let currentContentLine = '';
+        for (let i = 0; i < fullContent.length; i++) {
+            let testLine = currentContentLine + fullContent[i];
+            if (ctx.measureText(testLine).width > maxWidth && currentContentLine.length > 0) {
+                contentLines.push(currentContentLine);
+                currentContentLine = fullContent[i];
             } else {
-                currentExcerptLine = testLine;
+                currentContentLine = testLine;
             }
         }
-        if (currentExcerptLine) excerptLines.push(currentExcerptLine);
-        excerptLines = excerptLines.slice(0, 3);
-        excerptLines.forEach((line, idx) => {
-            ctx.fillText(line, width / 2, startY + idx * 38);
+        if (currentContentLine) contentLines.push(currentContentLine);
+
+        // 计算可用空间，自适应字号
+        const maxLines = Math.floor((cardH - (startY - cardY) - 60) / 30);
+        while (contentLines.length > maxLines && contentFontSize > 14) {
+            contentFontSize -= 1;
+            ctx.font = `${contentFontSize}px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+            contentLines = [];
+            currentContentLine = '';
+            for (let i = 0; i < fullContent.length; i++) {
+                let testLine = currentContentLine + fullContent[i];
+                if (ctx.measureText(testLine).width > maxWidth && currentContentLine.length > 0) {
+                    contentLines.push(currentContentLine);
+                    currentContentLine = fullContent[i];
+                } else {
+                    currentContentLine = testLine;
+                }
+            }
+            if (currentContentLine) contentLines.push(currentContentLine);
+        }
+
+        // 显示全部正文（如果超出就截断）
+        const finalMaxLines = Math.floor((cardH - (startY - cardY) - 50) / 30);
+        if (contentLines.length > finalMaxLines) {
+            contentLines = contentLines.slice(0, finalMaxLines);
+            let lastLine = contentLines[contentLines.length - 1];
+            while (ctx.measureText(lastLine + '...').width > maxWidth && lastLine.length > 0) {
+                lastLine = lastLine.slice(0, -1);
+            }
+            contentLines[contentLines.length - 1] = lastLine + '...';
+        }
+
+        ctx.fillStyle = '#333';
+        const contentLineHeight = contentFontSize * 1.5;
+        contentLines.forEach((line, idx) => {
+            ctx.fillText(line, width / 2, startY + idx * contentLineHeight);
         });
     }
 
-    // ===== 水印 =====
+    // 水印
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
-    ctx.font = `20px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
-    ctx.fillStyle = 'rgba(150,150,150,0.8)';
-    ctx.fillText(blogName, width - 40, height - 40);
+    ctx.font = `16px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
+    ctx.fillStyle = 'rgba(150,150,150,0.7)';
+    ctx.fillText(blogName, width - 25, height - 25);
 
     // 下载
     const link = document.createElement('a');
