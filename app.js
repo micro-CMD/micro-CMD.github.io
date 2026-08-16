@@ -176,7 +176,7 @@ async function generateShareImage() {
 
     const title = currentPostData.title || '无标题';
     const date = currentPostData.date || new Date().toISOString().slice(0, 10);
-    const blogName = 'micro-CMD 的博客';
+    const blogName = 'micro-CMD 的博客 https://micro-CMD.github.io';
     const bgImageUrl = 'images/bg1.jpg';
 
     // 提取正文
