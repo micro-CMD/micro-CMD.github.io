@@ -169,51 +169,67 @@ function toggleTheme() {
 
 // ========== 生成分享图 ==========
 async function generateShareImage() {
-    if (!currentPostData) {
+    // 从 DOM 中获取当前文章信息（更可靠）
+    const titleEl = document.querySelector('#post-content h1');
+    const dateEl = document.querySelector('#post-content .post-date-meta');
+    const contentEls = document.querySelectorAll('#post-content p');
+
+    if (!titleEl) {
         alert('请先打开一篇文章');
         return;
     }
 
-    const title = currentPostData.title || '无标题';
-    const date = currentPostData.date || new Date().toISOString().slice(0, 10);
+    const title = titleEl.textContent.trim();
+    const date = dateEl ? dateEl.textContent.trim().replace('📅 ', '') : new Date().toISOString().slice(0, 10);
     const blogName = 'micro-CMD 的博客';
-    const bgImageUrl = 'images/bg1.jpg';
+    const bgImageUrl = 'images/bg1.jpg'; // 确认路径正确
 
-    // 提取正文摘要
+    // 从 DOM 提取正文（合并所有段落，去除 HTML 标签）
     let rawContent = '';
-    if (Array.isArray(currentPostData.content)) {
-        rawContent = currentPostData.content.join(' ');
-    } else if (typeof currentPostData.content === 'string') {
-        rawContent = currentPostData.content;
-    }
-    rawContent = rawContent.replace(/<[^>]+>/g, '');
-    let excerpt = rawContent.slice(0, 80);
-    if (rawContent.length > 80) excerpt += '...';
+    contentEls.forEach(el => {
+        rawContent += el.textContent.trim() + ' ';
+    });
+    rawContent = rawContent.trim();
+    // 截取前 100 个字符作为摘要
+    let excerpt = rawContent.slice(0, 100);
+    if (rawContent.length > 100) excerpt += '...';
 
     // 加载背景图
     const bgImg = new Image();
     bgImg.crossOrigin = 'anonymous';
     bgImg.src = bgImageUrl;
-    await new Promise((resolve, reject) => {
-        bgImg.onload = resolve;
-        bgImg.onerror = () => reject(new Error('背景图加载失败'));
-    });
+    try {
+        await new Promise((resolve, reject) => {
+            bgImg.onload = resolve;
+            bgImg.onerror = () => reject(new Error('背景图加载失败，请检查路径'));
+        });
+    } catch (err) {
+        alert('背景图加载失败，将使用纯色背景');
+        // 如果背景图加载失败，继续执行，后面会绘制纯色背景
+    }
 
-    const width = 1200,
-        height = 630;
+    const width = 1200, height = 630;
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
 
-    ctx.drawImage(bgImg, 0, 0, width, height);
+    // 绘制背景（如果图片加载成功则画图，否则画渐变）
+    try {
+        ctx.drawImage(bgImg, 0, 0, width, height);
+    } catch (e) {
+        // 纯色渐变背景
+        const grad = ctx.createLinearGradient(0, 0, width, height);
+        grad.addColorStop(0, '#667eea');
+        grad.addColorStop(1, '#764ba2');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
+    }
 
     // 半透明圆角卡片
     const cardMargin = 80;
-    const cardX = cardMargin,
-        cardY = cardMargin;
-    const cardW = width - 2 * cardMargin,
-        cardH = height - 2 * cardMargin;
+    const cardX = cardMargin, cardY = cardMargin;
+    const cardW = width - 2 * cardMargin, cardH = height - 2 * cardMargin;
     const radius = 30;
 
     ctx.beginPath();
@@ -229,15 +245,15 @@ async function generateShareImage() {
     ctx.closePath();
     ctx.fillStyle = 'rgba(255,255,255,0.82)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // ===== 文字 =====
+    // ===== 绘制文字 =====
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
 
-    // 标题（自动换行）
+    // 标题自动换行
     const maxTitleWidth = cardW - 80;
     let fontSize = 44;
     ctx.font = `bold ${fontSize}px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
@@ -286,8 +302,8 @@ async function generateShareImage() {
     ctx.fillStyle = '#666';
     ctx.fillText(`📅 ${date}`, width / 2, startY);
 
-    // 正文摘要
-    if (excerpt) {
+    // 正文摘要（如果有内容）
+    if (excerpt && excerpt.length > 0) {
         startY += 45;
         ctx.font = `26px "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif`;
         ctx.fillStyle = '#333';
@@ -305,7 +321,7 @@ async function generateShareImage() {
             }
         }
         if (currentLine) excerptLines.push(currentLine);
-        excerptLines = excerptLines.slice(0, 3);
+        excerptLines = excerptLines.slice(0, 3); // 最多3行
         excerptLines.forEach((l, idx) => {
             ctx.fillText(l, width / 2, startY + idx * 38);
         });
