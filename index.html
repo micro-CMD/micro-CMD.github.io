@@ -15,6 +15,7 @@
         <div class="nav-links">
             <a href="/" onclick="navigate('/'); return false;">首页</a>
             <a href="/about" onclick="navigate('/about'); return false;">关于</a>
+            <!-- 下载入口已移除，通过直接访问 #/arcaea-download 或 #/phira-download 进入 -->
             <a onclick="toggleTheme(); return false;" style="cursor:pointer;">🌓 深色</a>
         </div>
     </nav>
@@ -22,12 +23,14 @@
     <!-- ========== 首页文章列表 ========== -->
     <div id="home-page"></div>
 
+    <div id="download-page" style="display:none;">
+        <div id="download-content" style="padding:20px 0;"></div>
+    </div>
+
     <!-- ========== 文章详情页 ========== -->
     <div id="post-page" style="display:none;">
-        <!-- 1. 文章正文 -->
         <div id="post-content"></div>
-
-        <!-- 2. 分享按钮区域 -->
+        <!-- 分享按钮区域 -->
         <div id="share-section" style="margin-top: 30px; text-align: center; display: none;">
             <button id="share-btn" style="
                 background: #4a6cf7;
@@ -41,9 +44,12 @@
                 transition: 0.2s;
             ">📤 生成分享图</button>
         </div>
-
-        <!-- 3. 返回首页链接 -->
         <a class="back-link" onclick="navigate('/'); return false;">← 返回首页</a>
+    </div>
+
+    <!-- ========== 下载页面容器（Arcaea 和 Phira 共用） ========== -->
+    <div id="download-page" style="display:none;">
+        <div id="download-content" style="padding: 20px 0;"></div>
     </div>
 
     <!-- ========== 页脚 ========== -->

@@ -155,3 +155,9 @@ body {
 [data-theme="dark"] .back-link {
     color: #7a9eff;
 }
+[data-theme="dark"] #download-content h2 {
+    color: #e0e0e0;
+}
+[data-theme="dark"] #download-content p {
+    color: #aaa;
+}
