@@ -181,56 +181,63 @@ function renderDownloadPage() {
 }
 // ========== 下载 Arcaea（直接请求 API，使用 killcors 代理） ==========
 // ========== 下载 Arcaea（多代理轮询） ==========
+// ========== 下载 Arcaea（多代理获取版本号 + CNB 链接） ==========
 async function downloadArcaea() {
     const btn = document.getElementById('download-arcaea-btn');
     const originalText = btn ? btn.textContent : '下载中...';
 
-    // 代理列表（按优先级排列）
+    // 代理列表（按优先级排序）
     const proxies = [
+        'https://api.allorigins.win/raw?url=',
         'https://corsproxy.io/?',
         'https://proxy.killcors.com?url='
     ];
-
-    const api = 'https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk';
+    const apiUrl = 'https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk';
 
     if (btn) {
-        btn.textContent = '⏳ 尝试获取链接...';
+        btn.textContent = '⏳ 获取版本...';
         btn.disabled = true;
     }
 
-    // 依次尝试每个代理
-    for (let i = 0; i < proxies.length; i++) {
-        try {
-            const proxy = proxies[i];
-            const url = proxy + encodeURIComponent(api);
-            const resp = await fetch(url, { signal: AbortSignal.timeout(8000) }); // 8秒超时
-            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-            const data = await resp.json();
+    let version = null;
 
-            if (data.success && data.value && data.value.url) {
-                // 成功获取到链接，打开下载
-                window.open(data.value.url, '_blank');
-                if (btn) {
-                    btn.textContent = `✅ 已开始下载 (${data.value.version || '最新版'})`;
-                    setTimeout(() => {
-                        btn.textContent = originalText;
-                        btn.disabled = false;
-                    }, 3000);
-                }
-                return; // 成功则退出函数
+    // 轮询代理
+    for (const proxy of proxies) {
+        try {
+            const resp = await fetch(proxy + encodeURIComponent(apiUrl), {
+                signal: AbortSignal.timeout(6000) // 6秒超时
+            });
+            if (!resp.ok) continue;
+            const data = await resp.json();
+            if (data.success && data.value && data.value.version) {
+                version = data.value.version;
+                console.log(`✅ 通过 ${proxy} 获取到版本:`, version);
+                break;
             }
         } catch (error) {
-            console.warn(`代理 ${proxies[i]} 失败:`, error.message);
-            // 继续尝试下一个代理
+            console.warn(`代理 ${proxy} 失败:`, error.message);
         }
     }
 
-    // 所有代理都失败
-    console.error('所有代理均无法获取下载链接');
-    alert('获取下载链接失败，请前往官网下载。');
+    // 如果所有代理都失败，使用硬编码后备版本
+    if (!version) {
+        version = '6.16.8c';
+        console.warn('⚠️ 所有代理失败，使用后备版本:', version);
+        alert('获取最新版本失败，将使用后备版本下载。');
+    }
+
+    // 拼接 CNB 下载链接
+    const downloadUrl = `https://cnb.cool/haorwen/arcaea-apk/-/releases/download/${version}/arcaea_${version}.apk`;
+
+    // 打开下载
+    window.open(downloadUrl, '_blank');
+
     if (btn) {
-        btn.textContent = originalText;
-        btn.disabled = false;
+        btn.textContent = `✅ 已开始下载 (${version})`;
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }, 3000);
     }
 }
 
