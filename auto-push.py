@@ -124,7 +124,7 @@ root.geometry("650x550")
 root.resizable(False, False)
 
 # 提示
-tk.Label(root, text="📝 一键提交博客到 GitHub", font=("微软雅黑", 16, "bold")).pack(pady=10)
+tk.Label(root, text="尽情的push吧！", font=("微软雅黑", 16, "bold")).pack(pady=10)
 
 # 提交信息输入
 frame_msg = tk.Frame(root)
@@ -132,10 +132,19 @@ frame_msg.pack(pady=10, padx=20, fill="x")
 tk.Label(frame_msg, text="提交信息：", font=("微软雅黑", 11)).pack(side=tk.LEFT)
 entry_msg = tk.Entry(frame_msg, font=("微软雅黑", 11), width=40)
 entry_msg.pack(side=tk.LEFT, padx=10)
-entry_msg.insert(0, "更新博客内容")
+entry_msg.insert(0, "a push")
 
-# 按钮
-btn_push = tk.Button(root, text="🚀 一键提交并推送", font=("微软雅黑", 14), bg="#4a6cf7", fg="white", padx=20, pady=8, command=do_push)
+# 按钮 - 修复点：将 text=u font=... 改为正确写法
+btn_push = tk.Button(
+    root,
+    text="🚀 一键提交并推送",          # 修正此处
+    font=("微软雅黑", 14),
+    bg="#4a6cf7",
+    fg="white",
+    padx=20,
+    pady=8,
+    command=do_push
+)
 btn_push.pack(pady=10)
 
 # 状态栏

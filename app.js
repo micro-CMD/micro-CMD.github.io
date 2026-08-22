@@ -9,11 +9,7 @@ let currentPostData = null;
 // ========== 随机背景图 ==========
 function setRandomBackground() {
     const images = [
-        'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200',
-        'https://images.unsplash.com/photo-1470071459604-7b8ec44ffd0b?w=1200',
-        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200',
-        'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200',
-        'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200'
+        'images/0723458a3aff6a65a4f0fa2e9301ed1c.png'
     ];
     const randomIndex = Math.floor(Math.random() * images.length);
     document.body.style.backgroundImage = `url(${images[randomIndex]})`;
